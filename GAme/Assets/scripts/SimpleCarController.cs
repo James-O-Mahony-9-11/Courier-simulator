@@ -13,18 +13,27 @@ public class SimpleCarController : MonoBehaviour
     public TMP_Text speedText;
     public float maxSpeed = 50f;
 
+    public GameObject car;
+    private AudioListener audioListener;
+
     public gameManager gameManager;
+
+    bool toggleLightsBool;
+    [SerializeField] GameObject Headlights;
 
 
     void Start()
     {
-
+        toggleLightsBool = false;
+        Headlights.SetActive(toggleLightsBool);
+        audioListener = car.GetComponent<AudioListener>();
     }
 
     public void FixedUpdate()
     {
         if (gameManager.IsDriving)
         {
+            audioListener.enabled = true;
             float motor = maxMotorTorque * Input.GetAxis("Vertical");
             float steering = maxSteeringAngle * Input.GetAxis("Horizontal");
 
@@ -44,11 +53,17 @@ public class SimpleCarController : MonoBehaviour
                 { //currently not working. might remove//
                     axleInfo.leftWheel.motorTorque = 0;
                     axleInfo.rightWheel.motorTorque = 0;
+                    axleInfo.leftWheel.brakeTorque = Mathf.Infinity;
+                    axleInfo.rightWheel.brakeTorque = Mathf.Infinity;
 
                 }
                 ApplyLocalPositionToVisuals(axleInfo.leftWheel);
                 ApplyLocalPositionToVisuals(axleInfo.rightWheel);
             }
+        }
+        else
+        {
+            audioListener.enabled = false;
         }
     }
 
@@ -69,6 +84,7 @@ public class SimpleCarController : MonoBehaviour
     void Update()
     {
         UpdateSpeedometer();
+        toggleLights();
     }
 
     private void UpdateSpeedometer()
@@ -79,6 +95,14 @@ public class SimpleCarController : MonoBehaviour
         speedText.text = ((int)speed).ToString() + " km/h";
     }
 
+    void toggleLights()
+    {
+        if (Input.GetKeyUp(KeyCode.L))
+        {
+            toggleLightsBool = !toggleLightsBool;
+            Headlights.SetActive(toggleLightsBool);
+        }
+    }
 }
 
 [System.Serializable]
